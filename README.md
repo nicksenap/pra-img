@@ -1,46 +1,49 @@
-# TRIWA Image Processor
+# TRIWA Image API
 
-This script processes a CSV file containing TRIWA product variant IDs, fetches product data from the Footway API, extracts image URLs, and adds them to a new CSV file with separate columns for each image.
-
-## Features
-
-- Reads variant IDs from a CSV file
-- Makes API calls to fetch product data
-- Extracts image URLs from the API response
-- Creates a new CSV file with separate columns for each image URL (image_url_1, image_url_2, etc.)
-- Optimizes API calls by first determining the maximum number of images per product
-
-## Requirements
-
-- Python 3.6+
-- Required packages: `requests`
+A FastAPI application that processes a list of EANs and returns a CSV file with image URLs for TRIWA products.
 
 ## Installation
 
-1. Clone this repository
-2. Install the required packages:
-   ```
-   pip install -r requirements.txt
-   ```
+This project uses [uv](https://github.com/astral-sh/uv) for dependency management.
 
-## Usage
+```bash
+uv pip install -e .
+```
 
-1. Ensure your CSV file is in the `data/` directory and named `triwa.csv`
-2. Run the script:
-   ```
-   python hello.py
-   ```
-3. The script will:
-   - First scan all products to determine the maximum number of images
-   - Create a new CSV file `data/triwa_with_images.csv` with additional columns for each image URL
+## Running the API
 
-## CSV Format
+```bash
+uvicorn app:app --reload
+```
 
-The input CSV file should have at least a `variant_id` column. The output CSV will have all the original columns plus additional columns named `image_url_1`, `image_url_2`, etc., up to the maximum number of images found (capped at 10 by default).
+The API will be available at http://localhost:8000
 
-## Notes
+## API Endpoints
 
-- The script includes a small delay between API calls to avoid overwhelming the server
-- The script makes two passes through the data: first to count images, then to add the URLs
-- Errors during API calls are logged but don't stop the script
-- The maximum number of image columns is capped at 10 by default (can be adjusted in the code)
+### 1. Process EANs from a File
+
+`POST /process-eans/`
+
+Upload a text file containing one EAN per line. The API will return a CSV file with all image URLs.
+
+Example using curl:
+```bash
+curl -X POST -F "file=@data/ean_list.txt" http://localhost:8000/process-eans/ -o triwa_images.csv
+```
+
+### 2. Process EANs from JSON
+
+`POST /process-eans-text/`
+
+Send a JSON array of EANs. The API will return a CSV file with all image URLs.
+
+Example using curl:
+```bash
+curl -X POST -H "Content-Type: application/json" -d '["7350056808765", "7350056806419"]' http://localhost:8000/process-eans-text/ -o triwa_images.csv
+```
+
+## Documentation
+
+API documentation is available at:
+- http://localhost:8000/docs - Swagger UI
+- http://localhost:8000/redoc - ReDoc
